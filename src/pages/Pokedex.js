@@ -23,6 +23,10 @@ const Pokedex = () => {
   const [pokePerPage, setPokePerPage] = useState(0);
   const [isBtnUse, setisBtnUse] = useState(false);
   const { numPages } = useAuth();
+  const [color, setColor] = useState(null);
+  const [colorList, setColorList] = useState(null);
+  const [gender, setGender] = useState(null);
+  const [genderList, setGenderList] = useState(null);
 
   //First Fetch of Pokemon Data
   useEffect(() => {
@@ -32,6 +36,7 @@ const Pokedex = () => {
           const data = await fetch(`https://pokeapi.co/api/v2/type/${type}`),
             dataJson = await data.json();
           setTypeList(dataJson.pokemon);
+          console.log(dataJson.pokemon)
           setPokeList(null);
         } else {
           const data = await fetch(
@@ -50,11 +55,65 @@ const Pokedex = () => {
     getData();
   }, [type]);
 
+  useEffect(() => {
+    const getDataColor = async () => {
+      try {
+        if (color) {
+          const data = await fetch(`https://pokeapi.co/api/v2/pokemon-color/${color}`),
+            dataJson = await data.json();
+          setColorList(dataJson.pokemon_species);
+          console.log(dataJson.pokemon_species)
+          setPokeList(null);
+        } else {
+          const data = await fetch(
+              `https://pokeapi.co/api/v2/pokemon/?limit=1500&offset=0`
+            ),
+            dataJson = await data.json();
+          setPokeList(dataJson.results);
+          setNextPag(dataJson.next);
+          setPrevPag(dataJson.previous);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    getDataColor();
+  }, [color]);
+
+  useEffect(() => {
+    const getDataGender = async () => {
+      try {
+        if (gender) {
+          const data = await fetch(`https://pokeapi.co/api/v2/gender/${gender}`),
+            dataJson = await data.json();
+          setGenderList(dataJson.pokemon_species_details);
+          console.log(dataJson.pokemon_species_details)
+          setPokeList(null);
+        } else {
+          const data = await fetch(
+              `https://pokeapi.co/api/v2/pokemon/?limit=1500&offset=0`
+            ),
+            dataJson = await data.json();
+          setPokeList(dataJson.results);
+          setNextPag(dataJson.next);
+          setPrevPag(dataJson.previous);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    getDataGender();
+  }, [gender]);
+
   //Submit input data
   const onSubmit = (data) => {
     setInputData(data);
     setPokeList(null);
     setTypeList(null);
+    setColorList(null);
+    setGenderList(null);
     setisBtnUse(false);
     reset();
   };
@@ -77,6 +136,8 @@ const Pokedex = () => {
       return pokeList.slice(pokePerPage, pokePerPage + numPages);
     }
   };
+
+  
 
   const nextPage = () => {
     setisBtnUse(false);
@@ -128,7 +189,10 @@ const Pokedex = () => {
     else return [];
   };
 
+  
+
   const currentPoke = switchPageBtn();
+  
 
   const page = (num) => {
     setCurrentPage(num);
@@ -150,6 +214,14 @@ const Pokedex = () => {
       return pokemonPage().map((u, index) => (
         <PokeCard key={"0" + index} pokeUrl={u.pokemon.url} />
       ));
+      // else if (colorList)
+      // return pokemonPage().map((u, index) => (
+      //   <PokeCard key={"0" + index} pokeUrl={u.pokemon_species.url} />
+      // ));
+      // else if (genderList)
+      // return pokemonPage().map((u, index) => (
+      //   <PokeCard key={"0" + index} pokeUrl={u.pokemon_species_details.url} />
+      // ));
     else if (pokeList)
       return pokemonPage().map((u, index) => (
         <PokeCard key={"0" + index} pokeUrl={u.url} />
@@ -171,6 +243,8 @@ const Pokedex = () => {
           setMaxPageLimit={setMaxPageLimit}
           setMinPageLimit={setMinPageLimit}
           setPokePerPage={setPokePerPage}
+          setColor={setColor}
+          setGender={setGender}
         />
       </section>
       <section className="pokecard-container">{Pokemon}</section>
